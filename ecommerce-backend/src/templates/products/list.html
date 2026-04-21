@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+
+{% block title %}All Products - MasterShop{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8 text-sm">
+        <a href="{% url 'home' %}" class="text-gray-500 hover:text-blue-600">Home</a>
+        <span class="mx-2 text-gray-400">/</span>
+        <span class="text-gray-800 font-semibold">Products</span>
+    </nav>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Sidebar Filters -->
+        <div class="lg:w-1/4">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
+                <h3 class="font-semibold text-lg mb-4">Filters</h3>
+                
+                <!-- Categories -->
+                <div class="mb-6">
+                    <h4 class="font-medium mb-2">Categories</h4>
+                    <div class="space-y-2">
+                        {% for category in categories %}
+                        <label class="flex items-center">
+                            <input type="checkbox" 
+                                   name="category" 
+                                   value="{{ category.slug }}"
+                                   class="rounded text-blue-600 focus:ring-blue-500"
+                                   onchange="filterProducts()">
+                            <span class="ml-2 text-gray-600">{{ category.name }}</span>
+                            <span class="ml-auto text-xs text-gray-400">({{ category.product_count }})</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Price Range -->
+                <div class="mb-6">
+                    <h4 class="font-medium mb-2">Price Range</h4>
+                    <div class="space-y-2">
+                        <input type="range" 
+                               id="priceRange" 
+                               min="0" 
+                               max="1000" 
+                               step="10" 
+                               class="w-full"
+                               onchange="filterProducts()">
+                        <div class="flex justify-between text-sm">
+                            <span>$0</span>
+                            <span id="priceValue">$500</span>
+                            <span>$1000+</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Brands -->
+                <div class="mb-6">
+                    <h4 class="font-medium mb-2">Brands</h4>
+                    <div class="space-y-2 max-h-48 overflow-y-auto">
+                        {% for brand in brands %}
+                        <label class="flex items-center">
+                            <input type="checkbox" 
+                                   name="brand" 
+                                   value="{{ brand.slug }}"
+                                   class="rounded text-blue-600 focus:ring-blue-500"
+                                   onchange="filterProducts()">
+                            <span class="ml-2 text-gray-600">{{ brand.name }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Rating -->
+                <div class="mb-6">
+                    <h4 class="font-medium mb-2">Customer Rating</h4>
+                    <div class="space-y-2">
+                        {% for i in "4321"|make_list %}
+                        <label class="flex items-center">
+                            <input type="radio" 
+                                   name="rating" 
+                                   value="{{ i }}"
+                                   class="text-blue-600 focus:ring-blue-500"
+                                   onchange="filterProducts()">
+                            <span class="ml-2 text-gray-600">
+                                {% for j in "12345"|make_list %}
+                                {% if forloop.counter <= i|add:0 %}
+                                <i class="fas fa-star text-yellow-400"></i>
+                                {% else %}
+                                <i class="far fa-star text-yellow-400"></i>
+                                {% endif %}
+                                {% endfor %}
+                                & Up
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Availability -->
+                <div class="mb-6">
+                    <h4 class="font-medium mb-2">Availability</h4>
+                    <label class="flex items-center">
+                        <input type="checkbox" 
+                               name="in_stock" 
+                               value="true"
+                               class="rounded text-blue-600 focus:ring-blue-500"
+                               onchange="filterProducts()">
+                        <span class="ml-2 text-gray-600">In Stock</span>
+                    </label>
+                </div>
+                
+                <!-- Mastercard Exclusive -->
+                <div class="mb-6">
+                    <label class="flex items-center p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <input type="checkbox" 
+                               name="mastercard_exclusive" 
+                               value="true"
+                               class="rounded text-yellow-600 focus:ring-yellow-500"
+                               onchange="filterProducts()">
+                        <span class="ml-2 text-sm">
+                            <span class="font-semibold text-yellow-700">Mastercard Exclusive</span>
+                            <span class="text-gray-600 block text-xs">Extra 10% off</span>
+                        </span>
+                    </label>
+                </div>
+                
+                <button onclick="clearFilters()" 
+                        class="w-full bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm">
+                    Clear All Filters
+                </button>
+            </div>
+        </div>
+        
+        <!-- Product Grid -->
+        <div class="lg:w-3/4">
+            <!-- Header -->
+            <div class="bg-white rounded-lg shadow-md p-4 mb-6 flex justify-between items-center">
+                <div>
+                    <span class="text-gray-600">Showing {{ products.start_index }}–{{ products.end_index }} of {{ products.paginator.count }} results</span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <label class="text-gray-600">Sort by:</label>
+                    <select id="sortSelect" onchange="filterProducts()" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="newest">Newest</option>
+                        <option value="price_low">Price: Low to High</option>
+                        <option value="price_high">Price: High to Low</option>
+                        <option value="rating">Highest Rated</option>
+                        <option value="bestselling">Best Selling</option>
+                    </select>
+                    
+                    <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+                        <button class="px-3 py-2 bg-gray-100 hover:bg-gray-200">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="px-3 py-2 hover:bg-gray-100">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products -->
+            <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for product in products %}
+                <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition group">
+                    <div class="relative overflow-hidden rounded-t-lg h-64">
+                        {% if product.images.first %}
+                        <img src="{{ product.images.first.image.url }}" 
+                             alt="{{ product.name }}" 
+                             class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                        {% else %}
+                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        {% if product.discount_percentage > 0 %}
+                        <span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                            -{{ product.discount_percentage }}%
+                        </span>
+                        {% endif %}
+                        
+                        {% if product.is_low_stock %}
+                        <span class="absolute top-2 right-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                            Low Stock
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="text-xs text-gray-500 mb-1">{{ product.brand.name|default:"Generic" }}</div>
+                        <a href="{% url 'product-detail' product.slug %}" class="block">
+                            <h3 class="font-semibold text-gray-800 hover:text-blue-600 mb-2">{{ product.name }}</h3>
+                        </a>
+                        
+                        <div class="flex items-center mb-2">
+                            <div class="flex text-yellow-400">
+                                {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= product.average_rating|floatformat:0 %}
+                                <i class="fas fa-star"></i>
+                                {% else %}
+                                <i class="far fa-star"></i>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="text-sm text-gray-500 ml-2">({{ product.review_count }})</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-xl font-bold text-blue-600">${{ product.price }}</span>
+                                {% if product.compare_at_price %}
+                                <span class="text-sm text-gray-400 line-through ml-2">${{ product.compare_at_price }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <button onclick="addToWishlist({{ product.id }})" 
+                                        class="text-gray-400 hover:text-red-500 p-2">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button onclick="addToCart({{ product.id }})" 
+                                        class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if product.allow_backorders and product.stock == 0 %}
+                        <p class="text-xs text-green-600 mt-2">
+                            <i class="fas fa-clock mr-1"></i> Available for backorder
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-span-3 text-center py-12">
+                    <i class="fas fa-box-open text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No products found</h3>
+                    <p class="text-gray-500">Try adjusting your filters or search criteria.</p>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if products.paginator.num_pages > 1 %}
+            <div class="flex justify-center mt-8">
+                <div class="flex space-x-2">
+                    {% if products.has_previous %}
+                    <a href="?page={{ products.previous_page_number }}" 
+                       class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                        Previous
+                    </a>
+                    {% endif %}
+                    
+                    {% for i in products.paginator.page_range %}
+                        {% if products.number == i %}
+                        <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">{{ i }}</span>
+                        {% elif i > products.number|add:'-3' and i < products.number|add:'3' %}
+                        <a href="?page={{ i }}" 
+                           class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                            {{ i }}
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if products.has_next %}
+                    <a href="?page={{ products.next_page_number }}" 
+                       class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100">
+                        Next
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+let filterTimeout;
+
+function filterProducts() {
+    clearTimeout(filterTimeout);
+    filterTimeout = setTimeout(() => {
+        // Get selected filters
+        const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(cb => cb.value);
+        const brands = Array.from(document.querySelectorAll('input[name="brand"]:checked')).map(cb => cb.value);
+        const rating = document.querySelector('input[name="rating"]:checked')?.value;
+        const inStock = document.querySelector('input[name="in_stock"]:checked')?.value;
+        const mastercardExclusive = document.querySelector('input[name="mastercard_exclusive"]:checked')?.value;
+        const priceRange = document.getElementById('priceRange').value;
+        const sortBy = document.getElementById('sortSelect').value;
+        
+        // Build URL
+        let url = new URL(window.location.href);
+        url.searchParams.delete('category');
+        url.searchParams.delete('brand');
+        url.searchParams.delete('rating');
+        url.searchParams.delete('in_stock');
+        url.searchParams.delete('mastercard_exclusive');
+        url.searchParams.delete('max_price');
+        url.searchParams.delete('sort');
+        
+        categories.forEach(c => url.searchParams.append('category', c));
+        brands.forEach(b => url.searchParams.append('brand', b));
+        if (rating) url.searchParams.set('min_rating', rating);
+        if (inStock) url.searchParams.set('in_stock', 'true');
+        if (mastercardExclusive) url.searchParams.set('mastercard_exclusive', 'true');
+        url.searchParams.set('max_price', priceRange);
+        url.searchParams.set('sort', sortBy);
+        url.searchParams.set('page', '1');
+        
+        window.location.href = url.toString();
+    }, 500);
+}
+
+function clearFilters() {
+    window.location.href = window.location.pathname;
+}
+
+function addToCart(productId) {
+    fetch('/api/orders/cart/add_item/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Product added to cart!');
+        location.reload();
+    });
+}
+
+function addToWishlist(productId) {
+    fetch('/api/products/products/' + productId + '/add-to-wishlist/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Added to wishlist!');
+    });
+}
+
+// Update price display
+document.getElementById('priceRange').addEventListener('input', function(e) {
+    document.getElementById('priceValue').innerText = '$' + e.target.value;
+});
+</script>
+{% endblock %}

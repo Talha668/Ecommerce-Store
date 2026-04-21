@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders - MasterShop{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">My Orders</h1>
+    
+    <div class="space-y-4">
+        {% for order in orders %}
+        <div class="border rounded-lg p-4">
+            <p>Order #{{ order.order_number }}</p>
+            <p>Status: {{ order.status }}</p>
+            <p>Total: ${{ order.total }}</p>
+            <a href="#" class="text-blue-500">View Details</a>
+        </div>
+        {% empty %}
+        <p>No orders yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

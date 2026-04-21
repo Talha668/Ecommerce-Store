@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}MasterShop - Shop with Mastercard{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-blue-600 to-blue-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <!-- Left Content -->
+            <div class="space-y-6">
+                <div class="flex items-center space-x-3 mb-4">
+                    <i class="fab fa-cc-mastercard text-4xl"></i>
+                    <span class="text-2xl font-bold">Mastercard</span>
+                </div>
+                <h1 class="text-4xl lg:text-5xl font-bold leading-tight">
+                    Shop Smarter with <br>
+                    <span class="text-yellow-300">Exclusive Mastercard</span> Deals
+                </h1>
+                <p class="text-lg text-blue-100">
+                    Enjoy 10% extra discount on all purchases made with your Mastercard. 
+                    Plus free shipping on orders over $50.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="{% url 'product-list' %}" 
+                       class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                        Shop Now
+                    </a>
+                    <a href="#categories" 
+                       class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">
+                        Browse Categories
+                    </a>
+                </div>
+                
+                <!-- Trust Badges -->
+                <div class="flex items-center space-x-6 pt-8">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-shield-alt text-2xl"></i>
+                        <span class="text-sm">Secure Payment</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-truck text-2xl"></i>
+                        <span class="text-sm">Free Shipping</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-undo-alt text-2xl"></i>
+                        <span class="text-sm">30-Day Returns</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Content - Hero Image -->
+            <div class="relative">
+                <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8">
+                    <img src="https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg?auto=compress&cs=tinysrgb&w=600" 
+                         alt="Shopping with Mastercard" 
+                         class="rounded-lg shadow-2xl w-full h-auto"
+                         onerror="this.src='https://placehold.co/600x400/1e40af/white?text=MasterShop+Store'">
+                </div>
+                <!-- Decorative Elements -->
+                <div class="absolute -top-4 -right-4 bg-yellow-400 rounded-full p-4 shadow-lg">
+                    <i class="fas fa-tag text-blue-800 text-xl"></i>
+                </div>
+                <div class="absolute -bottom-4 -left-4 bg-red-500 rounded-full p-4 shadow-lg">
+                    <i class="fas fa-percent text-white text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mastercard Exclusive Banner -->
+<section class="bg-yellow-50 border-b border-yellow-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="bg-yellow-400 p-3 rounded-full">
+                    <i class="fab fa-cc-mastercard text-3xl text-white"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-gray-800">Mastercard Exclusive Offer</h3>
+                    <p class="text-gray-600">Get an extra 10% off when you pay with your Mastercard. Use code: <span class="font-mono bg-yellow-200 px-2 py-1 rounded">MASTER10</span></p>
+                </div>
+            </div>
+            <a href="{% url 'product-list' %}?mastercard_exclusive=true" 
+               class="bg-yellow-400 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition">
+                Shop Exclusive Deals
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Shop by Categories -->
+<section id="categories" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Shop by Categories</h2>
+    
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {% for category in featured_categories %}
+        <a href="{% url 'product-list' %}?category={{ category.slug }}" 
+           class="group bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                {% if category.image %}
+                <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-12 h-12 object-contain">
+                {% else %}
+                <i class="fas fa-{{ category.icon|default:'tag' }} text-3xl text-blue-600"></i>
+                {% endif %}
+            </div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-blue-600">{{ category.name }}</h3>
+            <p class="text-xs text-gray-500 mt-1">{{ category.product_count }}+ items</p>
+        </a>
+        {% empty %}
+        <!-- Fallback categories if none in database -->
+        <a href="{% url 'product-list' %}?category=electronics" class="group bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                <i class="fas fa-mobile-alt text-3xl text-blue-600"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-blue-600">Electronics</h3>
+            <p class="text-xs text-gray-500 mt-1">50+ items</p>
+        </a>
+        <a href="{% url 'product-list' %}?category=clothing" class="group bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                <i class="fas fa-tshirt text-3xl text-purple-600"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-purple-600">Clothing</h3>
+            <p class="text-xs text-gray-500 mt-1">100+ items</p>
+        </a>
+        <a href="{% url 'product-list' %}?category=home-living" class="group bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                <i class="fas fa-couch text-3xl text-green-600"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-green-600">Home & Living</h3>
+            <p class="text-xs text-gray-500 mt-1">75+ items</p>
+        </a>
+        <a href="{% url 'product-list' %}?category=beauty" class="group bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-pink-100 to-pink-200 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                <i class="fas fa-spa text-3xl text-pink-600"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-pink-600">Beauty</h3>
+            <p class="text-xs text-gray-500 mt-1">60+ items</p>
+        </a>
+        <a href="{% url 'product-list' %}?category=sports" class="group bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-orange-100 to-orange-200 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                <i class="fas fa-dumbbell text-3xl text-orange-600"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-orange-600">Sports</h3>
+            <p class="text-xs text-gray-500 mt-1">40+ items</p>
+        </a>
+        <a href="{% url 'product-list' %}?category=books" class="group bg-white rounded-lg shadow-md hover:shadow-xl transition p-6 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                <i class="fas fa-book text-3xl text-red-600"></i>
+            </div>
+            <h3 class="font-semibold text-gray-800 group-hover:text-red-600">Books</h3>
+            <p class="text-xs text-gray-500 mt-1">30+ items</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="bg-gray-100 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Featured Products</h2>
+            <a href="{% url 'product-list' %}" class="text-blue-600 hover:text-blue-700 font-semibold">
+                View All <i class="fas fa-arrow-right ml-2"></i>
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for product in featured_products %}
+            <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition group">
+                <div class="relative overflow-hidden rounded-t-lg h-64">
+                    {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" 
+                         alt="{{ product.name }}" 
+                         class="w-full h-full object-cover group-hover:scale-110 transition duration-300">
+                    {% else %}
+                    <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-box text-gray-400 text-6xl"></i>
+                    </div>
+                    {% endif %}
+                    
+                    {% if product.discount_percentage > 0 %}
+                    <span class="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        -{{ product.discount_percentage }}%
+                    </span>
+                    {% endif %}
+                    
+                    {% if product.is_low_stock %}
+                    <span class="absolute top-2 right-2 bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        Low Stock
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="p-4">
+                    <div class="text-xs text-gray-500 mb-1">{{ product.brand.name|default:"Generic" }}</div>
+                    <a href="{% url 'product-detail' product.slug %}" class="block">
+                        <h3 class="font-semibold text-gray-800 hover:text-blue-600 mb-2 truncate">{{ product.name }}</h3>
+                    </a>
+                    
+                    <div class="flex items-center mb-2">
+                        <div class="flex text-yellow-400">
+                            {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= product.average_rating|floatformat:0 %}
+                            <i class="fas fa-star text-sm"></i>
+                            {% else %}
+                            <i class="far fa-star text-sm"></i>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <span class="text-xs text-gray-500 ml-2">({{ product.review_count }})</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <span class="text-xl font-bold text-blue-600">${{ product.price }}</span>
+                            {% if product.compare_at_price %}
+                            <span class="text-sm text-gray-400 line-through ml-2">${{ product.compare_at_price }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <button onclick="addToCart({{ product.id }})" 
+                                class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Placeholder products when database is empty -->
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="w-full h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
+                    <i class="fas fa-mobile-alt text-gray-400 text-6xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-2">iPhone 15 Pro</h3>
+                <p class="text-blue-600 font-bold mb-4">$999.99</p>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Add to Cart
+                </button>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="w-full h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
+                    <i class="fas fa-laptop text-gray-400 text-6xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-2">MacBook Pro M3</h3>
+                <p class="text-blue-600 font-bold mb-4">$1,299.99</p>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Add to Cart
+                </button>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="w-full h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
+                    <i class="fas fa-headphones text-gray-400 text-6xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-2">Sony WH-1000XM5</h3>
+                <p class="text-blue-600 font-bold mb-4">$349.99</p>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Add to Cart
+                </button>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6 text-center">
+                <div class="w-full h-48 bg-gray-200 rounded-lg mb-4 flex items-center justify-center">
+                    <i class="fas fa-clock text-gray-400 text-6xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-800 mb-2">Apple Watch Series 9</h3>
+                <p class="text-blue-600 font-bold mb-4">$399.99</p>
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Add to Cart
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Special Offers -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Free Shipping -->
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-lg p-6">
+            <i class="fas fa-truck text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold mb-2">Free Shipping</h3>
+            <p class="text-blue-100">On all orders over $50. Fast and reliable delivery.</p>
+        </div>
+        
+        <!-- Mastercard Offer -->
+        <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 text-gray-800 rounded-lg p-6">
+            <i class="fab fa-cc-mastercard text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold mb-2">Mastercard Exclusive</h3>
+            <p class="text-gray-700">Extra 10% off with code MASTER10</p>
+        </div>
+        
+        <!-- 24/7 Support -->
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg p-6">
+            <i class="fas fa-headset text-4xl mb-4"></i>
+            <h3 class="text-xl font-bold mb-2">24/7 Support</h3>
+            <p class="text-purple-100">Our customer service team is always here to help.</p>
+        </div>
+    </div>
+</section>
+
+<script>
+function addToCart(productId) {
+    fetch('/api/orders/cart/add_item/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ product_id: productId, quantity: 1 })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Product added to cart!');
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to add product to cart. Please try again.');
+    });
+}
+</script>
+{% endblock %}

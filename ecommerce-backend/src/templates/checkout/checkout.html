@@ -1,0 +1,542 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout - MasterShop{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-method-card {
+        transition: all 0.2s ease;
+    }
+    .payment-method-card:hover {
+        border-color: #2563eb;
+        background-color: #eff6ff;
+    }
+    .payment-method-card.selected {
+        border-color: #2563eb;
+        background-color: #eff6ff;
+        border-width: 2px;
+    }
+    .card-input {
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="%23999" d="M4 6h16v2H4V6zm0 4h16v2H4v-2zm0 4h10v2H4v-2z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Checkout Steps -->
+    <div class="mb-8">
+        <div class="flex items-center justify-center">
+            <div class="flex items-center">
+                <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                    1
+                </div>
+                <span class="ml-2 font-semibold text-blue-600">Cart</span>
+            </div>
+            <div class="w-12 h-1 mx-2 bg-blue-600"></div>
+            <div class="flex items-center">
+                <div class="bg-blue-600 text-white rounded-full w-8 h-8 flex items-center justify-center">
+                    2
+                </div>
+                <span class="ml-2 font-semibold text-blue-600">Checkout</span>
+            </div>
+            <div class="w-12 h-1 mx-2 bg-gray-300"></div>
+            <div class="flex items-center">
+                <div class="bg-gray-300 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
+                    3
+                </div>
+                <span class="ml-2 text-gray-500">Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Checkout Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Checkout</h2>
+                
+                <form id="checkoutForm" method="post" action="{% url 'checkout' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Shipping Address -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">1. Shipping Address</h3>
+                        
+                        <div class="space-y-4">
+                            {% if addresses %}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {% for address in addresses %}
+                                <label class="relative border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-600">
+                                    <input type="radio" 
+                                           name="shipping_address_id" 
+                                           value="{{ address.id }}"
+                                           class="absolute top-4 right-4"
+                                           {% if address.is_default %}checked{% endif %}
+                                           required>
+                                    <div>
+                                        <p class="font-semibold text-gray-800">{{ address.full_name }}</p>
+                                        <p class="text-sm text-gray-600">{{ address.street }}</p>
+                                        <p class="text-sm text-gray-600">{{ address.city }}, {{ address.state }} {{ address.zip_code }}</p>
+                                        <p class="text-sm text-gray-600">{{ address.country }}</p>
+                                        <p class="text-sm text-gray-600 mt-2">
+                                            <i class="fas fa-phone-alt mr-1"></i> {{ address.phone_number }}
+                                        </p>
+                                    </div>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="text-center">
+                                <a href="{% url 'add-address' %}?next={% url 'checkout' %}" 
+                                   class="text-blue-600 hover:text-blue-700 text-sm font-semibold">
+                                    <i class="fas fa-plus-circle mr-1"></i> Add New Address
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-6 bg-gray-50 rounded-lg">
+                                <p class="text-gray-600 mb-4">You haven't added any shipping addresses yet.</p>
+                                <a href="{% url 'add-address' %}?next={% url 'checkout' %}" 
+                                   class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                                    Add New Address
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Shipping Method -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">2. Shipping Method</h3>
+                        
+                        <div class="space-y-3">
+                            <label class="flex items-center justify-between border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-600">
+                                <div class="flex items-center">
+                                    <input type="radio" name="shipping_method" value="standard" class="mr-3" checked>
+                                    <div>
+                                        <span class="font-semibold text-gray-800">Standard Shipping</span>
+                                        <p class="text-sm text-gray-500">3-5 business days</p>
+                                    </div>
+                                </div>
+                                <span class="font-semibold text-gray-800">
+                                    {% if cart.subtotal >= 100 %}Free{% else %}$5.99{% endif %}
+                                </span>
+                            </label>
+                            
+                            <label class="flex items-center justify-between border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-600">
+                                <div class="flex items-center">
+                                    <input type="radio" name="shipping_method" value="express" class="mr-3">
+                                    <div>
+                                        <span class="font-semibold text-gray-800">Express Shipping</span>
+                                        <p class="text-sm text-gray-500">1-2 business days</p>
+                                    </div>
+                                </div>
+                                <span class="font-semibold text-gray-800">$12.99</span>
+                            </label>
+                            
+                            <label class="flex items-center justify-between border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-600">
+                                <div class="flex items-center">
+                                    <input type="radio" name="shipping_method" value="overnight" class="mr-3">
+                                    <div>
+                                        <span class="font-semibold text-gray-800">Overnight Shipping</span>
+                                        <p class="text-sm text-gray-500">Next business day</p>
+                                    </div>
+                                </div>
+                                <span class="font-semibold text-gray-800">$19.99</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Method -->
+                    <div class="mb-8">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">3. Payment Method</h3>
+                        
+                        <!-- Payment Method Selection -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <label class="payment-method-card flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer selected"
+                                   onclick="selectPaymentMethod('mastercard')">
+                                <input type="radio" name="payment_method" value="mastercard" class="hidden" checked>
+                                <div class="flex items-center space-x-3">
+                                    <i class="fab fa-cc-mastercard text-3xl text-gray-700"></i>
+                                    <div>
+                                        <span class="font-semibold text-gray-800">Mastercard</span>
+                                        <p class="text-xs text-gray-500">Secure payment</p>
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="payment-method-card flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer"
+                                   onclick="selectPaymentMethod('visa')">
+                                <input type="radio" name="payment_method" value="visa" class="hidden">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fab fa-cc-visa text-3xl text-gray-700"></i>
+                                    <div>
+                                        <span class="font-semibold text-gray-800">Visa</span>
+                                        <p class="text-xs text-gray-500">Credit & Debit</p>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <!-- Mastercard Payment Form (Default) -->
+                        <div id="mastercardPayment" class="payment-form">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fab fa-cc-mastercard text-2xl text-blue-600 mr-3"></i>
+                                    <div>
+                                        <p class="font-semibold text-blue-800">Mastercard Exclusive Offer</p>
+                                        <p class="text-sm text-blue-600">Get 10% cashback on your first Mastercard payment</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Saved Cards -->
+                            {% if saved_cards %}
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-3">Select Saved Card</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {% for card in saved_cards %}
+                                    <label class="border border-gray-200 rounded-lg p-4 cursor-pointer hover:border-blue-600">
+                                        <input type="radio" name="card_id" value="{{ card.id }}" 
+                                               class="hidden" onchange="useSavedCard(this)">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center space-x-3">
+                                                <i class="fab fa-cc-mastercard text-2xl text-gray-600"></div>
+                                                <div>
+                                                    <p class="font-semibold text-gray-800">•••• {{ card.last_four }}</p>
+                                                    <p class="text-xs text-gray-500">Expires {{ card.expiry_month }}/{{ card.expiry_year }}</p>
+                                                </div>
+                                            </div>
+                                            <i class="fas fa-check-circle text-blue-600 opacity-0 card-selected-icon"></i>
+                                        </div>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <div class="mt-3 text-center">
+                                    <span class="text-sm text-gray-500">or</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- New Card Form -->
+                            <div id="newCardForm">
+                                <h4 class="font-semibold text-gray-800 mb-4">Enter Card Details</h4>
+                                
+                                <div class="space-y-4">
+                                    <div>
+                                        <label for="card_number" class="block text-sm font-medium text-gray-700 mb-1">
+                                            Card Number
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text" 
+                                                   id="card_number" 
+                                                   name="card_number" 
+                                                   maxlength="19"
+                                                   placeholder="1234 5678 9012 3456"
+                                                   class="card-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                                   oninput="formatCardNumber(this)">
+                                            <div class="absolute right-3 top-2">
+                                                <i class="fab fa-cc-mastercard text-2xl text-gray-400"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="cardholder_name" class="block text-sm font-medium text-gray-700 mb-1">
+                                            Cardholder Name
+                                        </label>
+                                        <input type="text" 
+                                               id="cardholder_name" 
+                                               name="cardholder_name" 
+                                               placeholder="John Doe"
+                                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-3 gap-4">
+                                        <div>
+                                            <label for="expiry_month" class="block text-sm font-medium text-gray-700 mb-1">
+                                                Month
+                                            </label>
+                                            <select id="expiry_month" 
+                                                    name="expiry_month" 
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">MM</option>
+                                                {% for i in "123456789012"|make_list %}
+                                                <option value="{{ forloop.counter }}">{{ forloop.counter|stringformat:"02d" }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="expiry_year" class="block text-sm font-medium text-gray-700 mb-1">
+                                                Year
+                                            </label>
+                                            <select id="expiry_year" 
+                                                    name="expiry_year" 
+                                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">YYYY</option>
+                                                {% for year in years %}
+                                                <option value="{{ year }}">{{ year }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label for="cvv" class="block text-sm font-medium text-gray-700 mb-1">
+                                                CVV
+                                            </label>
+                                            <input type="text" 
+                                                   id="cvv" 
+                                                   name="cvv" 
+                                                   maxlength="3"
+                                                   placeholder="123"
+                                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center">
+                                        <input type="checkbox" 
+                                               id="save_card" 
+                                               name="save_card" 
+                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                        <label for="save_card" class="ml-2 text-sm text-gray-600">
+                                            Save this card for future purchases
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Visa Payment Form (Hidden by default) -->
+                        <div id="visaPayment" class="payment-form hidden">
+                            <div class="bg-gray-50 rounded-lg p-6 text-center">
+                                <i class="fab fa-cc-visa text-5xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600">Visa payments coming soon!</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Billing Address -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-800">4. Billing Address</h3>
+                            <label class="flex items-center text-sm text-gray-600">
+                                <input type="checkbox" 
+                                       id="same_as_shipping" 
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                       checked
+                                       onchange="toggleBillingAddress()">
+                                <span class="ml-2">Same as shipping address</span>
+                            </label>
+                        </div>
+                        
+                        <div id="billingAddressSection" class="hidden">
+                            <!-- Billing address selection (similar to shipping) -->
+                        </div>
+                    </div>
+                    
+                    <!-- Order Notes -->
+                    <div class="mb-8">
+                        <label for="customer_notes" class="block text-sm font-medium text-gray-700 mb-2">
+                            Order Notes (Optional)
+                        </label>
+                        <textarea id="customer_notes" 
+                                  name="customer_notes" 
+                                  rows="3" 
+                                  placeholder="Special instructions for delivery"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center space-x-2">
+                        <i class="fas fa-lock"></i>
+                        <span>Place Order • ${{ cart.total }}</span>
+                    </button>
+                    
+                    <p class="text-xs text-gray-500 text-center mt-4">
+                        By placing your order, you agree to our Terms of Service and Privacy Policy.
+                    </p>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Your Order</h3>
+                
+                <!-- Items -->
+                <div class="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                    {% for item in cart.items.all %}
+                    <div class="flex items-start space-x-3">
+                        <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                            {% if item.product.images.first %}
+                            <img src="{{ item.product.images.first.image.url }}" 
+                                 alt="{{ item.product.name }}" 
+                                 class="w-full h-full object-cover">
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-800">{{ item.product.name }}</p>
+                            <p class="text-xs text-gray-500">Qty: {{ item.quantity }}</p>
+                            <p class="text-xs text-gray-600 mt-1">${{ item.unit_price }} each</p>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-800">${{ item.total }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Summary -->
+                <div class="border-t border-gray-200 pt-4 space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span class="font-semibold text-gray-800">${{ cart.subtotal }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Shipping</span>
+                        <span class="font-semibold text-gray-800">
+                            {% if cart.shipping_cost == 0 %}Free{% else %}${{ cart.shipping_cost }}{% endif %}
+                        </span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Tax</span>
+                        <span class="font-semibold text-gray-800">${{ cart.tax_amount }}</span>
+                    </div>
+                    {% if cart.discount_amount > 0 %}
+                    <div class="flex justify-between text-sm text-green-600">
+                        <span>Discount</span>
+                        <span>-${{ cart.discount_amount }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                    <div class="flex justify-between">
+                        <span class="text-base font-bold text-gray-800">Total</span>
+                        <span class="text-2xl font-bold text-blue-600">${{ cart.total }}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Including all taxes</p>
+                </div>
+                
+                <!-- Mastercard Cashback -->
+                <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fab fa-cc-mastercard text-2xl text-yellow-600 mr-3"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-yellow-800">10% Cashback with Mastercard</p>
+                            <p class="text-xs text-yellow-700">Get ${{ cart.total|floatformat:2|add:"*0.1"|floatformat:2 }} cashback</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Secure Checkout Badge -->
+                <div class="mt-6 flex items-center justify-center space-x-4 text-xs text-gray-500">
+                    <div class="flex items-center">
+                        <i class="fas fa-shield-alt text-green-600 mr-1"></i>
+                        Secure SSL
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-lock text-green-600 mr-1"></i>
+                        Encrypted
+                    </div>
+                    <div class="flex items-center">
+                        <i class="fas fa-credit-card text-green-600 mr-1"></i>
+                        PCI DSS
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedPaymentMethod = 'mastercard';
+
+function selectPaymentMethod(method) {
+    selectedPaymentMethod = method;
+    
+    // Update UI
+    document.querySelectorAll('.payment-method-card').forEach(el => {
+        el.classList.remove('selected', 'border-blue-600', 'bg-blue-50');
+        el.classList.add('border-gray-200');
+    });
+    event.currentTarget.classList.add('selected', 'border-blue-600', 'bg-blue-50');
+    
+    // Show appropriate form
+    document.querySelectorAll('.payment-form').forEach(el => {
+        el.classList.add('hidden');
+    });
+    document.getElementById(`${method}Payment`).classList.remove('hidden');
+}
+
+function useSavedCard(radio) {
+    // Hide new card form
+    document.getElementById('newCardForm').style.opacity = '0.5';
+    document.getElementById('newCardForm').style.pointerEvents = 'none';
+    
+    // Show selected icon
+    document.querySelectorAll('.card-selected-icon').forEach(icon => {
+        icon.classList.add('opacity-0');
+    });
+    radio.closest('label').querySelector('.card-selected-icon').classList.remove('opacity-0');
+}
+
+function formatCardNumber(input) {
+    let value = input.value.replace(/\D/g, '');
+    let formattedValue = '';
+    
+    for (let i = 0; i < value.length; i++) {
+        if (i > 0 && i % 4 === 0) {
+            formattedValue += ' ';
+        }
+        formattedValue += value[i];
+    }
+    
+    input.value = formattedValue;
+}
+
+function toggleBillingAddress() {
+    const checkbox = document.getElementById('same_as_shipping');
+    const billingSection = document.getElementById('billingAddressSection');
+    
+    if (checkbox.checked) {
+        billingSection.classList.add('hidden');
+    } else {
+        billingSection.classList.remove('hidden');
+    }
+}
+
+// Form submission
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validate form
+    const shippingAddress = document.querySelector('input[name="shipping_address_id"]:checked');
+    if (!shippingAddress) {
+        alert('Please select a shipping address');
+        return;
+    }
+    
+    // If using new card, validate card details
+    if (selectedPaymentMethod === 'mastercard' && !document.querySelector('input[name="card_id"]:checked')) {
+        const cardNumber = document.getElementById('card_number').value;
+        const cardholderName = document.getElementById('cardholder_name').value;
+        const expiryMonth = document.getElementById('expiry_month').value;
+        const expiryYear = document.getElementById('expiry_year').value;
+        const cvv = document.getElementById('cvv').value;
+        
+        if (!cardNumber || !cardholderName || !expiryMonth || !expiryYear || !cvv) {
+            alert('Please enter complete card details');
+            return;
+        }
+    }
+    
+    // Submit form
+    this.submit();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - MasterShop{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Login</h1>
+    
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded">Login</button>
+    </form>
+    
+    <p class="mt-4">Don't have an account? <a href="{% url 'register' %}" class="text-blue-500">Register</a></p>
+</div>
+{% endblock %}

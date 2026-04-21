@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9fafb;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .order-details {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .order-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #2563eb;
+            text-align: right;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Thank You for Your Order!</h1>
+        <p>Order #{{ order_number }}</p>
+    </div>
+    
+    <div class="content">
+        <p>Dear {{ user.first_name|default:user.email }},</p>
+        
+        <p>We're pleased to confirm that your order has been received and is being processed.</p>
+        
+        <div class="order-details">
+            <h3>Order Summary</h3>
+            <p><strong>Order Date:</strong> {{ order.created_at|date:"F j, Y" }}</p>
+            <p><strong>Payment Method:</strong> Mastercard ending in {{ order.payment_transaction.card_last_four }}</p>
+            <p><strong>Shipping Method:</strong> {{ order.get_shipping_method_display }}</p>
+            
+            <h4 style="margin-top: 20px;">Items Ordered:</h4>
+            {% for item in order_items %}
+            <div class="order-item">
+                <p><strong>{{ item.product.name }}</strong> x {{ item.quantity }}</p>
+                <p>Price: ${{ item.unit_price }}</p>
+            </div>
+            {% endfor %}
+            
+            <div class="total">
+                <p>Subtotal: ${{ order.subtotal }}</p>
+                <p>Shipping: ${{ order.shipping_cost }}</p>
+                <p>Tax: ${{ order.tax_amount }}</p>
+                <p style="font-size: 1.3em;">Total: ${{ order_total }}</p>
+            </div>
+        </div>
+        
+        <h3>Shipping Address</h3>
+        <p>
+            {{ shipping_address.full_name }}<br>
+            {{ shipping_address.street }}<br>
+            {{ shipping_address.city }}, {{ shipping_address.state }} {{ shipping_address.zip_code }}<br>
+            {{ shipping_address.country }}
+        </p>
+        
+        <p>You can track your order status by clicking the button below:</p>
+        
+        <a href="{{ site_url }}/orders/{{ order_number }}/" class="button">Track Your Order</a>
+        
+        <p>If you have any questions about your order, please don't hesitate to contact us.</p>
+        
+        <p>Best regards,<br>The MasterShop Team</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 2024 MasterShop. All rights reserved.</p>
+        <p>
+            <small>
+                This email was sent to {{ user.email }} because you placed an order at MasterShop.
+                Please do not reply to this email.
+            </small>
+        </p>
+    </div>
+</body>
+</html>

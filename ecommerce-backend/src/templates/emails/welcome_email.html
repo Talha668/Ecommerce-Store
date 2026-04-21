@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to MasterShop</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9fafb;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .feature-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 5px;
+        }
+        .button-outline {
+            background: transparent;
+            border: 2px solid #2563eb;
+            color: #2563eb;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #6b7280;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to MasterShop! 🎉</h1>
+        <p>Your account has been successfully created</p>
+    </div>
+    
+    <div class="content">
+        <p>Dear {{ user.first_name|default:user.email }},</p>
+        
+        <p>Thank you for joining MasterShop! We're thrilled to have you as part of our community.</p>
+        
+        <div class="feature-box">
+            <h3>✨ What you can do now:</h3>
+            <ul>
+                <li>Browse thousands of products</li>
+                <li>Save items to your wishlist</li>
+                <li>Track your orders in real-time</li>
+                <li>Get exclusive Mastercard offers</li>
+                <li>Earn cashback on every purchase</li>
+            </ul>
+        </div>
+        
+        <h3>🎁 Special Welcome Offer</h3>
+        <p>As a new member, enjoy <strong>10% cashback</strong> on your first purchase with Mastercard!</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ site_url }}/products/" class="button">Start Shopping</a>
+            <a href="{{ site_url }}/profile/" class="button button-outline">Complete Your Profile</a>
+        </div>
+        
+        <div class="feature-box">
+            <h4>💳 Mastercard Benefits</h4>
+            <p>Don't forget to add your Mastercard to get exclusive benefits:</p>
+            <ul>
+                <li>Instant cashback on all purchases</li>
+                <li>Zero fraud liability</li>
+                <li>24/7 customer support</li>
+            </ul>
+        </div>
+        
+        <p>If you have any questions, our support team is always here to help.</p>
+        
+        <p>Happy shopping!<br>The MasterShop Team</p>
+    </div>
+    
+    <div class="footer">
+        <p>© 2024 MasterShop. All rights reserved.</p>
+        <p>
+            <small>
+                This email was sent to {{ user.email }} because you created an account at MasterShop.
+                <a href="{{ site_url }}/unsubscribe/">Unsubscribe</a> from marketing emails.
+            </small>
+        </p>
+    </div>
+</body>
+</html>
