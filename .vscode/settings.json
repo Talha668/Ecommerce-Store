@@ -1,5 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./ecommerce-backend/venv/Lib/site-packages"
-    ]
-}
