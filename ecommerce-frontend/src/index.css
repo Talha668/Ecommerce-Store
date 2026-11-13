@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Inter font (loaded in index.html) as the app-wide font — same as base.html */
+body {
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
