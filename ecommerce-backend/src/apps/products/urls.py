@@ -3,9 +3,6 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 
-
-
-
 router = DefaultRouter()
 router.register(r'products', views.ProductViewSet, basename='product')
 # router.register(r'categories', views.CategoryListView, basename='category')
@@ -21,32 +18,33 @@ product_router.register(r'variants', views.ProductVariantViewSet, basename='prod
 urlpatterns = [
     # Include main router
     path('', include(router.urls)),
-
-    # Search product
-    path('search/', views.ProductSearchView.as_view(), name='product-search'),
+    # NOTE: search is handled by GET /api/products/products/?search=...
+    # (DRF SearchFilter on ProductViewSet) — the old /search/ template view was removed.
 
     # Category
     path('categories/', views.CategoryListView.as_view(), name='categories'),
     path('category/<slug:slug>/', views.CategoryDetailView.as_view(), name='category-detail'),
-    
+
     # Nested routes for products
     path('products/<slug:slug>/', include(product_router.urls)),
-    
+
     # Additional product endpoints
-    path('products/<slug:slug>/add-review/', 
-         views.ProductViewSet.as_view({'post': 'add_review'}), 
+    path('products/<slug:slug>/add-review/',
+         views.ProductViewSet.as_view({'post': 'add_review'}),
          name='product-add-review'),
-    path('products/<slug:slug>/add-to-wishlist/', 
-         views.ProductViewSet.as_view({'post': 'add_to_wishlist'}), 
+    path('products/<slug:slug>/add-to-wishlist/',
+         views.ProductViewSet.as_view({'post': 'add_to_wishlist'}),
          name='product-add-to-wishlist'),
-    
+
+    # Brands — FIX: BrandListView existed but was never routed,
+    # so GET /api/products/brands/ returned 404 while the frontend calls it.
+    path('brands/', views.BrandListView.as_view(), name='brand-list'),
+    path('brands/<int:pk>/',
+         views.BrandDetailView.as_view(),
+         name='brand-detail'),
+
     # Category detail (needs to be after nested routes)
-    path('categories/<int:pk>/', 
-         views.CategoryDetailView.as_view(), 
+    path('categories/<int:pk>/',
+         views.CategoryDetailView.as_view(),
          name='category-detail'),
-    
-    # Brand detail
-    path('brands/<int:pk>/', 
-         views.BrandDetailView.as_view(), 
-         name='brand-detail'),     
 ]

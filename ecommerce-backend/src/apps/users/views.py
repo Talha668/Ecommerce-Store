@@ -18,24 +18,19 @@ from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
 from rest_framework.generics import CreateAPIView
 
 
-
-
-
-
-
 class RegisterView(generics.CreateAPIView):
     """View for user registration"""
     serializer_class = UserRegisterSerializer
     permission_classes = [permissions.AllowAny]
-    
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        
+
         # Generate tokens for automatic login
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             'user': UserSerializer(user, context=self.get_serializer_context()).data,
             'refresh': str(refresh),
@@ -47,7 +42,7 @@ class RegisterView(generics.CreateAPIView):
 class LoginView(APIView):
     """View for user login"""
     permission_classes = [permissions.AllowAny]
-    
+
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -63,7 +58,7 @@ class LoginView(APIView):
 class LogoutView(APIView):
     """View for user logout (token blacklist)"""
     permission_classes = [IsAuthenticated]
-    
+
     def post(self, request):
         try:
             refresh_token = request.data["refresh"]
@@ -78,7 +73,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     """View for user profile"""
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_object(self):
         # Get or create user profile
         profile, created = UserProfile.objects.get_or_create(user=self.request.user)
@@ -89,7 +84,7 @@ class UserDetailView(generics.RetrieveUpdateAPIView):
     """View for user details"""
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_object(self):
         return self.request.user
 
@@ -98,15 +93,15 @@ class ChangePasswordView(generics.UpdateAPIView):
     """View for changing password"""
     serializer_class = ChangePasswordSerializer
     permission_classes = [IsAuthenticated]
-    
+
     def get_object(self):
         return self.request.user
-    
+
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        
+
         return Response({
             'message': 'Password changed successfully',
             'user': UserSerializer(user, context=self.get_serializer_context()).data
@@ -116,11 +111,11 @@ class ChangePasswordView(generics.UpdateAPIView):
 class ForgotPasswordView(APIView):
     """View for forgot password"""
     permission_classes = [permissions.AllowAny]
-    
+
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         # Check if user exists
         user = serializer.validated_data.get('user')
         if not user:
@@ -128,24 +123,24 @@ class ForgotPasswordView(APIView):
             return Response({
                 'message': 'If your email exists in our system, you will receive a password reset link.'
             }, status=status.HTTP_200_OK)
-        
+
         # Generate reset token
         token = str(uuid.uuid4())
         expires_at = timezone.now() + timedelta(hours=24)
-        
+
         # Delete old tokens for this user
         PasswordResetToken.objects.filter(user=user).delete()
-        
+
         # Create new token
         PasswordResetToken.objects.create(
             user=user,
             token=token,
             expires_at=expires_at
         )
-        
-        # TODO: Send email with reset link
-        reset_link = f"http://localhost:3000/reset-password?token={token}"
-        
+
+        # TODO: Send email with reset link (wire to notifications email service)
+        reset_link = f"http://localhost:5173/reset-password?token={token}"
+
         return Response({
             'message': 'Password reset email sent',
             'reset_link': reset_link  # Remove in production, only for development
@@ -155,12 +150,12 @@ class ForgotPasswordView(APIView):
 class ResetPasswordView(APIView):
     """View for resetting password"""
     permission_classes = [permissions.AllowAny]
-    
+
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        
+
         return Response({
             'message': 'Password reset successful',
             'user': UserSerializer(user).data
@@ -171,10 +166,11 @@ class UserAddressListView(generics.ListCreateAPIView):
     """View for listing and creating user addresses"""
     serializer_class = UserAddressSerializer
     permission_classes = [IsAuthenticated]
-    
+    pagination_class = None  # Return a plain array — the frontend accepts both shapes
+
     def get_queryset(self):
         return UserAddress.objects.filter(user=self.request.user)
-    
+
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -183,7 +179,8 @@ class UserAddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     """View for retrieving, updating, and deleting user addresses"""
     serializer_class = UserAddressSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
-    
+    pagination_class = None
+
     def get_queryset(self):
         return UserAddress.objects.filter(user=self.request.user)
 
@@ -198,7 +195,7 @@ class AddAdressview(CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Save the address (the user is assingned to the serializer)
+        # Save the address (the user is assigned to the serializer)
         self.perform_create(serializer)
 
         headers = self.get_success_headers(serializer.data)
@@ -207,10 +204,10 @@ class AddAdressview(CreateAPIView):
                 "message": "Address added successfully",
                 "data": serializer.data
             },
-            status=staus.HTTP_201_CREATED,
+            status=status.HTTP_201_CREATED,  # FIX: was misspelled "staus" (NameError)
             headers=headers
         )
-    
+
 
 # Admin Views
 class AdminUserListView(generics.ListAPIView):

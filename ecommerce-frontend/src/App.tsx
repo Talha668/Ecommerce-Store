@@ -18,20 +18,7 @@ import { WishlistPage } from './pages/WishlistPage'
 import { AboutPage, ContactPage } from './pages/StaticPages'
 import { NotFoundPage } from './pages/NotFoundPage'
 
-/**
- * Route map — mirrors the old Django URL configuration (config/urls.py):
- *
- *   path('', HomeView)                      →  /
- *   path('products/', ProductListView)      →  /products
- *   path('products/<slug>/', ProductDetail) →  /products/:slug
- *   path('cart/', CartView)                 →  /cart
- *   path('checkout/', CheckoutPageView)     →  /checkout
- *   path('order-confirmation/<str>/')       →  /order-confirmation/:orderNumber
- *   path('my-orders/', MyOrdersView)        →  /my-orders
- *   path('profile/', UserProfileView)       →  /profile
- *   path('add-address/', AddAdressview)     →  /add-address
- *   path('login/'), register/, logout/      →  /login, /register
- */
+
 export function App() {
   return (
     <BrowserRouter>
