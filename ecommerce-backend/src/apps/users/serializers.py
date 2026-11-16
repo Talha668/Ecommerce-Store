@@ -8,6 +8,8 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+
+
 class UserRegisterSerializer(serializers.ModelSerializer):
     """Serializer for user registration"""
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})

@@ -2,10 +2,7 @@ import base64
 from rest_framework import serializers
 from django.utils import timezone
 from decimal import Decimal
-from .models import (
-    MastercardCard, MastercardPaymentTransaction,
-    Cart, CartItem, Order
-)
+from .models import MastercardCard, MastercardPaymentTransaction, Cart, CartItem, Order
 from apps.products.serializers import ProductListSerializer, ProductVariantSerializer
 from apps.users.serializers import UserAddressSerializer
 from .services.mastercard_service import MastercardPaymentService

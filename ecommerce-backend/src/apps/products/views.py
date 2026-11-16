@@ -1,10 +1,3 @@
-"""
-Products app views — API only.
-
-The old template-based views (ProductListView, ProductDetailView,
-ProductSearchView, home) were removed. Pages are owned by the React
-frontend; this module only serves JSON.
-"""
 from rest_framework import generics, status, filters, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny

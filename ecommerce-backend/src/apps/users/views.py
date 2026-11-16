@@ -18,6 +18,9 @@ from .permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
 from rest_framework.generics import CreateAPIView
 
 
+
+
+
 class RegisterView(generics.CreateAPIView):
     """View for user registration"""
     serializer_class = UserRegisterSerializer

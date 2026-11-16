@@ -1,10 +1,3 @@
-"""
-Orders app views — API only.
-
-The old template-based views (CartView, CheckoutPageView,
-OrderConfirmationView, MyOrdersView) were removed. Pages are owned by the
-React frontend; this module only serves JSON.
-"""
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
@@ -26,6 +19,8 @@ from .serializers import (
 from .services.mastercard_service import MastercardPaymentService
 from .services import CheckoutService
 from apps.products.pagination import ProductPagination
+
+
 
 
 class MastercardCardViewSet(viewsets.ModelViewSet):
